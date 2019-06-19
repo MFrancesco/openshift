@@ -1,0 +1,206 @@
+{
+	"kind": "Template",
+	"apiVersion": "v1",
+	"metadata": {
+		"name": "cassandra-statefulset-template",
+		"description": "Template to run a cassandra cluster via stateful set"
+	},
+	"parameters": [
+		{
+			"description": "Cassandra image your cluster is able to resolve",
+			"name": "CASSANDRA_IMAGE",
+			"value": "frehub/cassandra"
+		},
+		{
+			"description": "Project name in which the stateful set will be deployed, the current project",
+			"name": "PROJECT_NAME"
+		},
+		{
+			"description": "Storage class name used in the volume claim template for automatically provisioning on the volumes",
+			"name": "STORAGE_CLASS_NAME"
+		},
+		{
+			"description": "Storage request size",
+			"name": "STORAGE_REQUEST_SIZE",
+			"value": "1Gi"
+		},
+		{
+			"description": "Cassandra service name",
+			"name": "SERVICE_NAME",
+			"value": "cassandra-cluster-service"
+		},
+		{
+			"description": "Cassandra stateful set name",
+			"name": "STATEFUL_NAME",
+			"value": "cassandra-cluster"
+		},
+		{
+			"description": "Value for the cassandraInstace label, used as selector",
+			"name": "CASSANDRA_INSTANCE_SELECTOR",
+			"value": "cassandra"
+		},
+		{
+			"description": "Cassandra replicas",
+			"name": "REPLICAS",
+			"value": "3"
+		},
+		{
+			"description": "Cassandra authorizer AllowAllAuthorizer will disable authorization, CassandraAuthorizer will use it",
+			"name": "AUTHORIZER",
+			"value": "AllowAllAuthorizer or CassandraAuthorizer"
+		},
+		{
+			"description": "Cassandra cluster name",
+			"name": "CLUSTER_NAME",
+			"value": "OpenStackCluster"
+		},
+		{
+			"description": "Cassandra datacenter name",
+			"name": "CASSANDRA_DC",
+			"value": "dc1"
+		},
+		{
+			"description": "Cassandra rack name",
+			"name": "CASSANDRA_RACK",
+			"value": "rack1"
+		}
+	],
+	"labels":{
+		"template":"cassandra-statefulset-template"
+	},
+	"objects": [
+		{
+			"apiVersion": "v1",
+			"kind": "Service",
+			"metadata": {
+				"name": "${SERVICE_NAME}"
+			},
+			"spec": {
+				"clusterIP": "None",
+				"ports": [
+					{
+						"port": 7000,
+						"name": "intra-node",
+						"targetPort": 7000,
+						"protocol": "TCP"
+					},
+					{
+						"port": 7001,
+						"name": "tls-intra",
+						"targetPort": 7001,
+						"protocol": "TCP"
+					},
+					{
+						"port": 9042,
+						"name": "cql-port",
+						"targetPort": 9042,
+						"protocol": "TCP"
+					}
+				],
+				"selector": {
+					"cassandraInstance": "${CASSANDRA_INSTANCE_SELECTOR}"
+				}
+			}
+		},
+		{
+			"apiVersion": "apps/v1",
+			"kind": "StatefulSet",
+			"metadata": {
+				"name": "${STATEFUL_NAME}"
+			},
+			"spec": {
+				"selector": {
+					"matchLabels": {
+						"cassandraInstance": "${CASSANDRA_INSTANCE_SELECTOR}"
+					}
+				},
+				"serviceName": "${SERVICE_NAME}",
+				"replicas": "${REPLICAS}",
+				"template": {
+					"metadata": {
+						"labels": {
+							"cassandraInstance": "${CASSANDRA_INSTANCE_SELECTOR}"
+						}
+					},
+					"spec": {
+						"containers": [
+							{
+								"name": "cassandra-image",
+								"image": "${CASSANDRA_IMAGE}",
+								"imagePullPolicy": "Always",
+								"restartPolicy": "Always",
+								"command": [
+									"/opt/apache-cassandra/bin/docker-entrypoint.sh"
+								],
+								"env": [
+									{
+										"name": "CASSANDRA_SEEDS",
+										"value": "${STATEFUL_NAME}-0.${SERVICE_NAME}.${PROJECT_NAME}.svc.cluster.local"
+									},
+									{
+										"name": "CLUSTER_NAME",
+										"value": "${CLUSTER_NAME}"
+									},
+									{
+										"name": "CASSANDRA_DC",
+										"value": "${CASSANDRA_DC}"
+									},
+									{
+										"name": "CASSANDRA_RACK",
+										"value": "${CASSANDRA_RACK}"
+									},
+									{
+										"name": "AUTHORIZER",
+										"value": "${AUTHORIZER}"
+									}
+								],
+								"ports": [
+									{
+										"name": "cql-port",
+										"containerPort": 9042
+									},
+									{
+										"name": "thift-port",
+										"containerPort": 9160
+									},
+									{
+										"name": "intra-node",
+										"containerPort": 7000
+									},
+									{
+										"name": "tls-intra",
+										"containerPort": 7001
+									}
+								],
+								"volumeMounts": [
+									{
+										"name": "cassandra-storage",
+										"mountPath": "/var/lib/cassandra/data"
+									}
+								]
+							}
+						]
+					}
+				},
+				"volumeClaimTemplates": [
+					{
+						"metadata": {
+							"name": "cassandra-storage"
+						},
+						"spec": {
+							"resources": {
+								"requests": {
+									"storage": "${STORAGE_REQUEST_SIZE}"
+								}
+							},
+							"accessModes": [
+								"ReadWriteOnce"
+							],
+							"storageClassName": "${STORAGE_CLASS_NAME}"
+						}
+					}
+				]
+			}
+		}
+	]
+}

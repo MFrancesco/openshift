@@ -1,0 +1,109 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# Add any directories, files, or patterns you don't want to be tracked by version control
+# Add any directories, files, or patterns you don't want to be tracked by version control
+.settings
+.classpath
+.project
+*.iml
+*.ipr
+*.iws
+dist/
+lib_managed/
+project/boot/
+project/plugins/project/
+target/
+
+# use glob syntax.
+syntax: glob
+*.ser
+*.class
+*~
+*.bak
+#*.off
+*.old
+docker-compiled
+
+# eclipse conf file
+.settings/
+.classpath/
+.project/
+.manager
+.scala_dependencies
+
+# idea
+.idea/
+
+# building
+null
+tmp*
+temp
+dist
+test-output
+build.log
+
+# other scm
+.svn
+.CVS
+.hg*
+
+# switch to regexp syntax.
+#  syntax: regexp
+#  ^\.pc/
+
+#SHITTY output not in target directory
+*.log
+.DS_Store
+derby.log
+
+*.db
+
+.lib
+sbt
+
+logs
+log/
+sandbox/db
+
+node_modules/
+bower_components/
+
+front/test/build
+docker-compiled/
+docker-env/test/compose
+
+dvc-analytics-search/src/test/resources/HOUR*
+dvc-analytics-search/src/test/resources/MINUTE*
+
+
+
+angularjs-webgui/
+
+cages_*json
+
+*/Dvc_ProtoSpec_00
+docker/kafka/compose/zk-single-kafka-single
+docker_compile/*
