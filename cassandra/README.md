@@ -13,7 +13,7 @@ Running openshift cluster with available storage class, able to download images 
 
 #### How to use
 
-1- Import the [cassandra templace](cassandra_stateful_template.json)
+1- Import the [cassandra template](cassandra_stateful_template.json)
 
 2- Tune the configuration as needed
 
