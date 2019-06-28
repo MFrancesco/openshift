@@ -200,6 +200,36 @@ OpenJDK 64-Bit Server VM warning: If the number of processors is expected to inc
 >
    
 ```
+#### Configuring external route
+Once your cluster is secured, you may need to make accessible from outside, to do so, i'll use a route
+We need to add the authentication to the external listener
+```yaml
+...
+    listeners:
+      external:
+        type: route
+        authentication:
+          type: scram-sha-512
+      plain:
+....
+```
+A bootstrap route named `KAFKA_CLUSTER_NAME-kafka-bootstrap` will be created and your client will need to point to the hostname
+of such route on port 443, in our example the hostname will be fl-kafka-cluster-ephemeral-security-kafka-bootstrap-.apps.mydomain.com:443
+
+```bash
+sh-4.2$ cat /tmp/security.properties 
+security.protocol=SASL_SSL
+ssl.truststore.location=/tmp/truststore.jks
+ssl.truststore.password=password
+ssl.endpoint.identification.algorithm=
+sasl.mechanism=SCRAM-SHA-512
+sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginModule required username=user1 password=DECODED_PWD;
+   
+sh-4.2$ /opt/kafka/bin/kafka-console-producer.sh --broker-list fl-kafka-cluster-ephemeral-security-kafka-bootstrap.apps.mydomain.com:443 --topic TOPIC_NAME --producer.config /tmp/security.properties 
+>writing
+>from external
+>works
+```
 
 #### Bonus, configuring security on a spring-kafka application
 
@@ -239,4 +269,3 @@ spring:
       sasl.mechanism: "SCRAM-SHA-512"
       sasl.jaas.config: "org.apache.kafka.common.security.scram.ScramLoginModule required username=user1 password=DECODEDPWD;"
 ```
-
